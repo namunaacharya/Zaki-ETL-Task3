@@ -9,12 +9,12 @@ def extract_import():
                 return float(obj)
             raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-        zip = "/home/namuna-acharya/Desktop/zakipoint/Zaki-ETL-Task3/files/MagnaCarePPO_In-Network.zip"
+        zip_file = "/home/namuna-acharya/Desktop/zakipoint/Zaki-ETL-Task3/files/MagnaCarePPO_In-Network.zip"
 
         with open('/home/namuna-acharya/Desktop/zakipoint/Zaki-ETL-Task3/files/network_file.json','w') as in_file, \
             open('/home/namuna-acharya/Desktop/zakipoint/Zaki-ETL-Task3/files/provider_file.json','w') as prov_file:
  
-             with zipfile.ZipFile(zip, 'r') as file:
+             with zipfile.ZipFile(zip_file, 'r') as file:
                 for data in file.namelist():
                     with file.open(data, 'r') as f:
                         for item in ijson.items(f, 'in_network.item'):
