@@ -26,6 +26,3 @@ def extract_import():
                             prov_file.write(json.dumps(item, default=con_decimal) + '\n')
                     
 
-if __name__ == "__main__":
-        extract_import()
-
