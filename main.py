@@ -1,11 +1,14 @@
-from Extract.extract import extract_import
-from Scrub.scrub import scrub_import
-from Load.load import load_import
+import sys
+from Extract import extract
+from Scrub import scrub
+from Load import load
 
 def main():
-    extract_import()
-    scrub_import()
-    load_import()
+    zip_path = sys.argv[1]
+
+    extract_path = extract.extract_import(zip_path)
+    scrub_path = scrub.scrub_import(extract_path)
+    load.load_import(scrub_path)
 
 if __name__ == "__main__":
     main()
