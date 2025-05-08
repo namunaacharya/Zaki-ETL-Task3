@@ -11,5 +11,3 @@ def scrub_import():
 
         provider_file.printSchema()
 
-if __name__ == "__main__":
-        scrub_import()
