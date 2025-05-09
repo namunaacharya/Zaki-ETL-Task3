@@ -2,44 +2,42 @@ import psycopg2
 from pyspark.sql import SparkSession
 
 def load_import(rate_path,provider_path):
-    spark = SparkSession.builder .appName("Postgres") .config("spark.jars", "/home/namuna-acharya/jars/postgresql-42.5.6.jar") .getOrCreate()
-
+    spark = SparkSession.builder .appName("Postgres").config("spark.jars","/home/namuna-acharya/spark/jars/postgresql-42.6.0.jar").getOrCreate()
+    
     port = 5432
     database = "postgres"
     host = "localhost"
     user = "postgres"
     password = "sql123"
-
+   
     jdbc_url = "jdbc:postgresql://localhost:5432/postgres"
     jdbc_properties = {
         "user": user,
         "password": password,
         "driver": "org.postgresql.Driver"
     }
-
+   
     connection = psycopg2.connect(
         host= host,   
         dbname = database,
         user= user,        
         password=password,
         port= port)
-
     cursor = connection.cursor()
-
-    provider = """
-    CREATE TABLE IF NOT EXISTS provider(
+   
+    provider_ref = """
+    CREATE TABLE IF NOT EXISTS provider_ref(
         provider_group_id INT,
         npi BIGINT,
         tin_type SMALLINT,
         tin TEXT
     );
     """
-
-    cursor.execute(provider)
+    cursor.execute(provider_ref)
     connection.commit()
 
-    in_network= """
-    CREATE TABLE IF NOT EXISTS in_network(
+    network= """
+    CREATE TABLE IF NOT EXISTS network(
         billing_code TEXT,
         billing_code_type TEXT,
         negotiation_arrangement TEXT,    
@@ -51,17 +49,17 @@ def load_import(rate_path,provider_path):
         service_code INTEGER[]
     );
     """
-    cursor.execute(in_network)
+    cursor.execute(network)
     connection.commit()
 
-    in_network = spark.read.parquet(rate_path)
-    provider = spark.read.parquet(provider_path)
+    network_data = spark.read.parquet(rate_path)
+    provider_data = spark.read.parquet(provider_path)
+    
+    provider_data.show(5)   
+    network_data.show(5)
 
-    in_network.show(5)
-    provider.show(5)
-
-    in_network.write.jdbc(url=jdbc_url,table="in_network",mode="append", properties=jdbc_properties)
-    provider.write.jdbc(url=jdbc_url,table="provider",mode="append", properties=jdbc_properties)
+    provider_data.write.jdbc(url=jdbc_url,table="provider_ref",mode="append", properties=jdbc_properties)
+    network_data.write.jdbc(url=jdbc_url,table="network",mode="append", properties=jdbc_properties)
 
     cursor.close()
     connection.close()
