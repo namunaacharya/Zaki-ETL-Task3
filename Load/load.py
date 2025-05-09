@@ -26,7 +26,7 @@ def load_import(rate_path,provider_path):
 
     cursor = connection.cursor()
 
-    provider_table = """
+    provider = """
     CREATE TABLE IF NOT EXISTS provider(
         provider_group_id INT,
         npi BIGINT,
@@ -35,10 +35,10 @@ def load_import(rate_path,provider_path):
     );
     """
 
-    cursor.execute(provider_table)
+    cursor.execute(provider)
     connection.commit()
 
-    in_network_table= """
+    in_network= """
     CREATE TABLE IF NOT EXISTS in_network(
         billing_code TEXT,
         billing_code_type TEXT,
@@ -51,14 +51,17 @@ def load_import(rate_path,provider_path):
         service_code INTEGER[]
     );
     """
-    cursor.execute(in_network_table)
+    cursor.execute(in_network)
     connection.commit()
 
     in_network = spark.read.parquet(rate_path)
     provider = spark.read.parquet(provider_path)
 
-    in_network.write.jdbc(url=jdbc_url,table="in_network_table",mode="append", properties=jdbc_properties)
-    provider.write.jdbc(url=jdbc_url,table="provider_table",mode="append", properties=jdbc_properties)
+    in_network.show(5)
+    provider.show(5)
+
+    in_network.write.jdbc(url=jdbc_url,table="in_network",mode="append", properties=jdbc_properties)
+    provider.write.jdbc(url=jdbc_url,table="provider",mode="append", properties=jdbc_properties)
 
     cursor.close()
     connection.close()
