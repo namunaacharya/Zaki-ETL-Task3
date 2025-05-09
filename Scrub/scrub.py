@@ -3,7 +3,7 @@ from pyspark.sql.functions import explode,col,expr,when
 from pyspark.sql.types import ArrayType, IntegerType, ShortType
 
 def scrub_import(in_path,prov_path):
-    spark = SparkSession.builder.appName('python').config("spark.driver.memory", "4g").getOrCreate()
+    spark = SparkSession.builder.appName('pythonfile').config("spark.driver.memory", "4g").getOrCreate()
 
     rate_file = spark.read.json(in_path)
     provider_file = spark.read.json(prov_path)
@@ -66,7 +66,8 @@ def scrub_import(in_path,prov_path):
     rate_path = "output_file/rate_data.parquet"
     provider_path = "output_file/provider_data.parquet"
 
-    rate_cast.write.parquet(rate_path)
-    provider_cast.write.parquet(provider_path)
+    rate_cast.write.mode("overwrite").parquet(rate_path)
+    provider_cast.write.mode("overwrite").parquet(provider_path)
+
 
     return rate_path,provider_path
