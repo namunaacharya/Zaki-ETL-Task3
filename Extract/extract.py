@@ -4,7 +4,10 @@ import json
 import os
 from decimal import Decimal
 
-def extract_import(zip_path):
+def extract_import(zip_path,logger):
+
+    logger.info("Starting extract process")
+    
     def con_decimal(obj):
         if isinstance(obj, Decimal):
             return float(obj)
