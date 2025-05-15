@@ -21,10 +21,12 @@ class ETL:
         self.database = sp['POSTGRES']['DATABASE']
         self.password = sp['POSTGRES']['PASSWORD']
 
-        self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
         
     def execute(self,args,logger):
             in_path, prov_path = extract.extract_import(args.zip_path,logger)
+
+            self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
+
             rate_path, provider_path = scrub.scrub_import(in_path, prov_path,self,logger)
             load.load_import(rate_path, provider_path, self,logger) 
 
