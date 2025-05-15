@@ -1,5 +1,4 @@
 import yaml
-import argparse
 from Extract import extract
 from Scrub import scrub
 from Load import load
@@ -24,12 +23,7 @@ class ETL:
 
         self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
         
-    def execute(self,logger):
-            parser = argparse.ArgumentParser(description="ETL processing using ZIP file.")
-            parser.add_argument("--zip_path", required=True, help="ZIP file path")
-
-            args = parser.parse_args()
-
+    def execute(self,args,logger):
             in_path, prov_path = extract.extract_import(args.zip_path,logger)
             rate_path, provider_path = scrub.scrub_import(in_path, prov_path,self,logger)
             load.load_import(rate_path, provider_path, self,logger) 
