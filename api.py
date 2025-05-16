@@ -26,30 +26,30 @@ def pldata():
 def insertion_sort(planets, ascending=True):
     for i in range(1, len(planets)):
         current = planets[i]
-        j = i - 1
+        j = i-1
         if ascending:
             while j >= 0 and planets[j].distance > current.distance:
-                planets[j + 1] = planets[j]
+                planets[j+1] = planets[j]
                 j -= 1
         else:
             while j >= 0 and planets[j].distance < current.distance:
-                planets[j + 1] = planets[j]
+                planets[j+1] = planets[j]
                 j -= 1
-        planets[j + 1] = current
+        planets[j+1] = current
     return planets
 
 def bubble_sort(planets, ascending=True):
     n = len(planets)
     for i in range(n):
         swapped = False
-        for j in range(0, n - i - 1):
+        for j in range(0, n-i-1):
             if ascending:
-                if planets[j].distance > planets[j + 1].distance:
-                    planets[j], planets[j + 1] = planets[j + 1], planets[j]
+                if planets[j].distance > planets[j+1].distance:
+                    planets[j], planets[j + 1] = planets[j+1], planets[j]
                     swapped = True
             else:
-                if planets[j].distance < planets[j + 1].distance:
-                    planets[j], planets[j + 1] = planets[j + 1], planets[j]
+                if planets[j].distance < planets[j+1].distance:
+                    planets[j], planets[j+1] = planets[j+1], planets[j]
                     swapped = True
         if not swapped:
             break
