@@ -27,7 +27,7 @@ class ETL:
 
             self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
 
-            rate_path, provider_path = scrub.scrub_import(in_path, prov_path,self,logger)
+            rate_path, provider_path = scrub.scrub_import(in_path, prov_path,args.pro_path,self,logger)
             load.load_import(rate_path, provider_path, self,logger) 
 
 
