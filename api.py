@@ -38,18 +38,19 @@ def insertion_sort(planets, ascending=True):
         planets[j + 1] = current
     return planets
 
-def bubble_sort(planets,ascending=True):
+def bubble_sort(planets, ascending=True):
     n = len(planets)
     for i in range(n):
         swapped = False
-        for j in range(0,n-i-1):
+        for j in range(0, n - i - 1):
             if ascending:
-                while planets[j].distance > planets[j + 1].distance:
+                if planets[j].distance > planets[j + 1].distance:
                     planets[j], planets[j + 1] = planets[j + 1], planets[j]
+                    swapped = True
             else:
-                while planets[j].distance < planets[j + 1].distance:
+                if planets[j].distance < planets[j + 1].distance:
                     planets[j], planets[j + 1] = planets[j + 1], planets[j]
-                swapped = True
+                    swapped = True
         if not swapped:
             break
     return planets
