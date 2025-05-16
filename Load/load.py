@@ -24,32 +24,47 @@ def load_import(rate_path,provider_path,etl,logger):
         password=password,
         port= port)
     cursor = connection.cursor()
+
+    cursor.execute("DROP TABLE IF EXISTS provider_table;")
+    cursor.execute("DROP TABLE IF EXISTS rate_table;")
    
-    provider_ref = """
-    CREATE TABLE IF NOT EXISTS provider_ref(
+    provider_table = """
+    CREATE TABLE provider_table(
         provider_group_id INT,
         npi BIGINT,
         tin_type SMALLINT,
-        tin TEXT
+        tin VARCHAR(15),
+        prv_city VARCHAR(255),
+        prv_phone VARCHAR(15),
+        prv_state CHAR(2),
+        prv_street_1 VARCHAR(255),
+        prv_type_code INT,
+        prv_zip VARCHAR(10),
+        lat DOUBLE PRECISION,
+        lon DOUBLE PRECISION,
+        provider_full_name VARCHAR(255),
+        prv_taxonomy TEXT[],
+        prv_specialty TEXT[]
     );
     """
-    cursor.execute(provider_ref)
+
+    cursor.execute(provider_table)
     connection.commit()
 
-    network= """
-    CREATE TABLE IF NOT EXISTS network(
-        billing_code TEXT,
-        billing_code_type TEXT,
-        negotiation_arrangement TEXT,    
+    rate_table= """
+    CREATE TABLE rate_table(
+        billing_code VARCHAR(10),
+        billing_code_type VARCHAR(10),
+        negotiation_arrangement VARCHAR(5),    
         provider_group_id INT,     
-        billing_class TEXT,
+        billing_class VARCHAR(15),
         billing_code_modifier TEXT[],
         negotiated_rate DOUBLE PRECISION,    
-        negotiated_type TEXT,
+        negotiated_type VARCHAR(12),
         service_code INTEGER[]
     );
     """
-    cursor.execute(network)
+    cursor.execute(rate_table)
     connection.commit()
 
     network_data = spark.read.parquet(rate_path)
@@ -58,8 +73,8 @@ def load_import(rate_path,provider_path,etl,logger):
     provider_data.show(5)   
     network_data.show(5)
 
-    provider_data.write.jdbc(url=jdbc_url,table="provider_ref",mode="append", properties=jdbc_properties)
-    network_data.write.jdbc(url=jdbc_url,table="network",mode="append", properties=jdbc_properties)
+    provider_data.write.jdbc(url=jdbc_url,table="provider_table",mode="append", properties=jdbc_properties)
+    network_data.write.jdbc(url=jdbc_url,table="rate_table",mode="append", properties=jdbc_properties)
 
     cursor.close()
     connection.close()
