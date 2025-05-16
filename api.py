@@ -54,19 +54,6 @@ def bubble_sort(planets,ascending=True):
             break
     return planets
 
-def bubble_sort(planets, ascending=True):
-    n = len(planets)
-    for i in range(n):
-        swapped = False
-        for j in range(n - i - 1):
-            if (ascending and planets[j].distance > planets[j + 1].distance) or \
-               (not ascending and planets[j].distance < planets[j + 1].distance):
-                planets[j], planets[j + 1] = planets[j + 1], planets[j]
-                swapped = True
-        if not swapped:
-            break
-    return planets
-
 def main():
     parser = argparse.ArgumentParser(description="Sort planets by distance from Sun using different algorithms")
     parser.add_argument('--sort',choices=['apiA', 'apiD'],required=True,
