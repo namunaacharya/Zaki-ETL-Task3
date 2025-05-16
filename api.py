@@ -57,9 +57,9 @@ def bubble_sort(planets,ascending=True):
 def main():
     parser = argparse.ArgumentParser(description="Sort planets by distance from Sun using different algorithms")
     parser.add_argument('--sort',choices=['apiA', 'apiD'],required=True,
-                        help="Sorting:'apiA' for ascending or 'apiD'for descending")
+                        help="'--sort apiA for ascending or 'apiD'for descending")
     parser.add_argument('--algorithm', choices=['insertion','bubble'],required=True,
-                        help="Sorting algorithm:'insertion' or 'bubble'")
+                        help="--algorithm insertion or bubble")
     args = parser.parse_args()
 
     planets = pldata()
