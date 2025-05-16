@@ -39,54 +39,53 @@ def insertion_sort(planets, ascending=True):
     return planets
 
 def bubble_sort(planets,ascending=True):
-    l = len(planets)
-    for i in range(l):
-        for j in range(0,l-i-1):
+    n = len(planets)
+    for i in range(n):
+        swapped = False
+        for j in range(0,n-i-1):
             if ascending:
                 while planets[j].distance > planets[j + 1].distance:
                     planets[j], planets[j + 1] = planets[j + 1], planets[j]
             else:
                 while planets[j].distance < planets[j + 1].distance:
                     planets[j], planets[j + 1] = planets[j + 1], planets[j]
+                swapped = True
+        if not swapped:
+            break
+    return planets
+
+def bubble_sort(planets, ascending=True):
+    n = len(planets)
+    for i in range(n):
+        swapped = False
+        for j in range(n - i - 1):
+            if (ascending and planets[j].distance > planets[j + 1].distance) or \
+               (not ascending and planets[j].distance < planets[j + 1].distance):
+                planets[j], planets[j + 1] = planets[j + 1], planets[j]
+                swapped = True
+        if not swapped:
+            break
     return planets
 
 def main():
-    parser = argparse.ArgumentParser(description="Sorting Process with diff. sorting algorithm")
-    parser.add_argument('--sort', help='--sort apiA for ascending or --sort apiD for descending')
-    parser.add_argument('--algorithm', help='--sort apiA for ascending or --sort apiD for descending')
-
+    parser = argparse.ArgumentParser(description="Sort planets by distance from Sun using different algorithms")
+    parser.add_argument('--sort',choices=['apiA', 'apiD'],required=True,
+                        help="Sorting:'apiA' for ascending or 'apiD'for descending")
+    parser.add_argument('--algorithm', choices=['insertion','bubble'],required=True,
+                        help="Sorting algorithm:'insertion' or 'bubble'")
     args = parser.parse_args()
 
     planets = pldata()
-
-    options = ["apiA", "apiD"]
-    if args.sort not in options:
-        print("Invalid input.Use --sort apiA for ascending or --sort apiD for descending.")
-        return
-
+    asc = args.sort.endswith('A')
+    
     if args.algorithm == "insertion":
-        if args.sort[-1] == 'A':
-            sorted_planets = insertion_sort(planets, ascending=True)
-        elif args.sort[-1] == 'D':
-            sorted_planets = insertion_sort(planets, ascending=False)
-        else:
-            print("invalid")
-
-    elif args.algorithm == "bubble":
-        if args.sort[-1] == 'A':
-            sorted_planets = bubble_sort(planets, ascending=True)
-        elif args.sort[-1] == 'D':
-            sorted_planets = bubble_sort(planets, ascending=False)
-        else:
-            print("invalid")
-
+        sorted_planets = insertion_sort(planets, asc)
+    else:
+        sorted_planets = bubble_sort(planets, asc)
+    
     for planet in sorted_planets:
         print(planet)
-    insertion_sort(planets)
-    bubble_sort(planets)
-
 
 if __name__=='__main__':
     main()
         
-
