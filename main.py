@@ -3,7 +3,7 @@ import logging
 from etl import ETL
 
 def main():
-    logging.basicConfig(filename="ETLprocess.log",encoding='utf-8',level=logging.DEBUG,
+    logging.basicConfig(filename="ETLprocess.log",encoding='utf-8',level=logging.INFO,
                         format='%(asctime)s : %(message)s')
     logger = logging.getLogger("Logger")
 
