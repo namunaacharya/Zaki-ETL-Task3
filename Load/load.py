@@ -33,7 +33,7 @@ def load_import(rate_path,provider_path,etl,logger):
         provider_group_id INT,
         npi BIGINT,
         tin_type SMALLINT,
-        tin VARCHAR(15),
+        tin BIGINT,
         prv_city VARCHAR(255),
         prv_phone VARCHAR(15),
         prv_state CHAR(2),
