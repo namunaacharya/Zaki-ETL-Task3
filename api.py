@@ -63,12 +63,14 @@ def main():
                         help="--algorithm insertion or bubble")
     args = parser.parse_args()
 
-    planets = pldata()
+    planets = pldata() 
     asc = args.sort.endswith('A')
     
     if args.algorithm == "insertion":
+        print("Sorting using insertion algorithm.")
         sorted_planets = insertion_sort(planets, asc)
     else:
+        print("Sorting using bubble algorithm.")
         sorted_planets = bubble_sort(planets, asc)
     
     for planet in sorted_planets:
