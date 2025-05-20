@@ -6,7 +6,7 @@ import os
 from io import BytesIO
 from decimal import Decimal
 
-def extract_import(zip_path, logger):
+def extract_import(zip, logger):
     logger.info("Starting extract process")
 
     def con_decimal(obj):
@@ -19,11 +19,11 @@ def extract_import(zip_path, logger):
 
     nrpr_path = os.path.join(output_path, 'nrpr.json')
 
-    with zipfile.ZipFile(zip_path, 'r') as outer_zip:
+    with zipfile.ZipFile(zip, 'r') as outer_zip:
         for name in outer_zip.namelist():
             if name.endswith('.json.gz'):
                 with outer_zip.open(name) as new_file:
-                    with gzip.open(BytesIO(new_file.read()), 'r', encoding='utf-8') as f:
+                    with gzip.open(BytesIO(new_file.read()), 'rt', encoding='utf-8') as f:
                         with open(nrpr_path, 'w') as nrpr_file:
                             for item in ijson.items(f, 'in_network.item'):
                                 nrpr_file.write(json.dumps(item, default=con_decimal) + '\n')
