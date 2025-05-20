@@ -20,8 +20,8 @@ class ETL:
         self.password = sp['POSTGRES']['PASSWORD']
         
     def execute(self,args,logger):
-            nrpr_path,pro_path= extract_nrpr.extract_import(args.zip_path,args.prov_path,logger)
+            nrpr_path= extract_nrpr.extract_import(args.zip_path,args.prov_path,logger)
 
             self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
 
-            scrub_nrpr.scrub_import(nrpr_path,pro_path,self,logger)
+            scrub_nrpr.scrub_import(nrpr_path,args.pro_path,self,logger)
