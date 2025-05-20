@@ -7,9 +7,10 @@ def main():
                         format='%(asctime)s : %(message)s')
     logger = logging.getLogger("Logger")
 
-    parser = argparse.ArgumentParser(description="ETL processing using zip file and pro path.")
-    parser.add_argument('--zip_path', required=True, help='ZIP file path for ETL')
-    parser.add_argument('--prov_path', required=True, help='Provider detail zipfile path')
+    parser = argparse.ArgumentParser(description="ETL processing.")
+    parser.add_argument('--zip', required=True, help='ZIP file path for ETL')
+    parser.add_argument('--prov', required=True, help='Provider detail zipfile path')
+    parser.add_argument('--bill', required=True, help='Billing detail zipfile path')
 
     args = parser.parse_args()
 
