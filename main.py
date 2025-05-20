@@ -1,15 +1,15 @@
 import argparse
 import logging
-from etl import ETL
+from etl_nrpr import ETL
 
 def main():
-    logging.basicConfig(filename="ETLprocess.log",encoding='utf-8',level=logging.INFO,
+    logging.basicConfig(filename="ETL_nrpr_process.log",encoding='utf-8',level=logging.INFO,
                         format='%(asctime)s : %(message)s')
     logger = logging.getLogger("Logger")
 
     parser = argparse.ArgumentParser(description="ETL processing using zip file and pro path.")
     parser.add_argument('--zip_path', required=True, help='ZIP file path for ETL')
-    parser.add_argument('--pro_path', required=True, help='Provider detail file path')
+    parser.add_argument('--prov_path', required=True, help='Provider detail zipfile path')
 
     args = parser.parse_args()
 
