@@ -1,13 +1,80 @@
+from pyspark.sql.functions import expr,concat,hash,when,col,array,concat_ws
+from pyspark.sql.types import ShortType,LongType
 
-def scrub_import(nrpr_path,prov,bill,etl,logger):
+def scrub_import(nrpr_file,prov,bill,etl,logger):
     logger.info("Starting transform process")
 
     spark = etl.spark
 
-    nrpr_file = spark.read.json(nrpr_path)
-    pro_file = spark.read.parquet(prov)
+    nrpr_path = spark.read.json(nrpr_file)
+    pro_path = spark.read.parquet(prov)
 
-    nrpr_file.printSchema()
-    pro_file.printSchema()
+    nrpr_flat = nrpr_path.selectExpr("explode(in_network) as net").select("net.*")
+    rate_file = (nrpr_flat.selectExpr("*", "explode(negotiated_rates) as rates")
+        .selectExpr("*", "explode(rates.provider_groups) as id")
+        .selectExpr("*", "explode(id.npi) as npi")
+        .selectExpr("*", "explode(rates.negotiated_prices) as prices")
+        .selectExpr(
+            "billing_code",
+            "billing_code_type",
+            "negotiation_arrangement",
+            "npi",
+            "id.tin.type as tin_type",
+            "id.tin.value as tin",
+            "prices.billing_class as billing_class",
+            "prices.billing_code_modifier as billing_code_modifier",
+            "prices.negotiated_rate as negotiated_rate",
+            "prices.negotiated_type as negotiated_type",
+            "prices.service_code as service_code"
+        ) )
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    rate_id = (rate_file.withColumn('tin', expr("REPLACE(tin, '-', '')"))
+        .withColumn('provider_group_id',concat("npi","tin"))
+        .withColumn('provider_group_id',hash('provider_group_id')))
+    
+    rate_id.select('provider_group_id').distinct().count()
+    rate_id.select('npi','tin').distinct().count()
 
-    pro_file.show()
+    #Provider
+    provider = rate_id.select(
+        "provider_group_id",
+        "npi",
+        "tin_type",
+        "tin"
+    )
+
+    pr_df = (provider.withColumn("tin_type",when(col("tin_type") == "ein", 1)
+                        .when(col("tin_type") == "npi", 2))
+                        .withColumn("tin_type", col("tin_type").cast(ShortType())) 
+                        .withColumn("tin", col("tin").cast(LongType())))
+
+    #Provider Details
+    pd_df = (pro_path.selectExpr("*", "loc.lat as lat", "loc.lon as lon") 
+            .withColumn("provider_full_name", concat_ws(" ","provider_first_name", "provider_middle_name","provider_last_name"))
+            .withColumn("prv_taxonomy",array("prv_taxonomy_1_code", "prv_taxonomy_2_code", "prv_taxonomy_3_code"))
+            .withColumn("prv_specialty",array("prv_specialty_1_desc", "prv_specialty_2_desc", "prv_specialty_3_desc"))
+            
+            .drop("loc","prv_fax","prv_type_desc","provider_first_name","provider_last_name","provider_middle_name","provider_name_prefix_text",
+                "prv_taxonomy_1_code","prv_taxonomy_2_code","prv_taxonomy_3_code","prv_specialty_1_desc","prv_specialty_2_desc","prv_specialty_3_desc")
+            
+            .withColumn("prv_taxonomy",expr("filter(prv_taxonomy, x -> x IS NOT NULL AND x != '')")) 
+            .withColumn("prv_specialty",expr("filter(prv_specialty, x -> x IS NOT NULL AND x != '')"))
+            
+            .withColumn("prv_type_code",
+                            when(col("prv_type_code") == "P", 1)
+                            .when(col("prv_type_code") == "F", 2))
+            .withColumn("prv_type_code", col("prv_type_code").cast(ShortType()))
+            )
+    
+    #PR Table
+    pr_table = pr_df.join(pd_df,on ="npi",how= "inner")
+    excluded_npi = pr_df.join(pd_df,on ="npi",how="left_anti")
+
+    pr_table.printSchema()
+    pr_table.show(5)
+
+    #Network Table
+    in_net = rate_id.drop("npi","tin_type","tin") 
+    net_df = in_net.filter(in_net.billing_code.isNotNull() & (in_net.billing_code != ""))
+              
+    net_df.printSchema() 
