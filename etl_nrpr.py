@@ -1,6 +1,8 @@
 import yaml
 from Extract import extract_nrpr
 from Scrub import scrub_nrpr
+from Process import process
+from Load import load_nrpr
 from pyspark.sql import SparkSession
 
 class ETL:
@@ -24,4 +26,7 @@ class ETL:
 
             self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
 
-            scrub_nrpr.scrub_import(nrpr_file,args.prov,args.bill,self,logger)
+            pr_df,pd_df,net_df,bill_join,bill_df=scrub_nrpr.scrub_import(nrpr_file,args.prov,self,logger)
+            rate_path,provider_path = process.process(pr_df,pd_df,net_df,bill_join,self,logger)
+            load_nrpr.load_import(rate_path,provider_path,bill_df,self,logger)
+            
