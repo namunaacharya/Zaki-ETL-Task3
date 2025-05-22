@@ -13,9 +13,9 @@ def extract_import(input, logger):
     for files in os.listdir(input):
         if files.endswith('.json.gz'):
             file_path = os.path.join(input, files)
-            with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+            with gzip.open(file_path, 'rt') as f:
                         item = json.load(f)
-                        with open(nrpr_file, 'w', encoding='utf-8') as nrpr:
+                        with open(nrpr_file, 'w') as nrpr:
                             json.dump(item, nrpr)
 
     logger.info("File extracted successfully")
