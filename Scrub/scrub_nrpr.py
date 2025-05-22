@@ -1,7 +1,7 @@
-from pyspark.sql.functions import expr,concat,hash,when,col,array,concat_ws
-from pyspark.sql.types import ShortType,LongType
+from pyspark.sql.functions import expr,concat,hash,when,col,array,concat_ws,lpad
+from pyspark.sql.types import ShortType,LongType,ArrayType,IntegerType,DoubleType
 
-def scrub_import(nrpr_file,prov,bill,etl,logger):
+def scrub_import(nrpr_file,prov,etl,logger):
     logger.info("Starting transform process")
 
     spark = etl.spark
@@ -64,17 +64,25 @@ def scrub_import(nrpr_file,prov,bill,etl,logger):
                             when(col("prv_type_code") == "P", 1)
                             .when(col("prv_type_code") == "F", 2))
             .withColumn("prv_type_code", col("prv_type_code").cast(ShortType()))
+            .withColumn("lon", col("lon").cast(DoubleType()))
+            .withColumn("lat", col("lat").cast(DoubleType()))
             )
-    
-    #PR Table
-    pr_table = pr_df.join(pd_df,on ="npi",how= "inner")
-    excluded_npi = pr_df.join(pd_df,on ="npi",how="left_anti")
-
-    pr_table.printSchema()
-    pr_table.show(5)
 
     #Network Table
     in_net = rate_id.drop("npi","tin_type","tin") 
-    net_df = in_net.filter(in_net.billing_code.isNotNull() & (in_net.billing_code != ""))
-              
-    net_df.printSchema() 
+    net_df = (in_net.filter(in_net.billing_code.isNotNull() & (in_net.billing_code != ""))
+                .withColumn("service_code",col("service_code").cast(ArrayType(IntegerType())))
+)
+
+    #Billing code
+    b_df = spark.read.csv('billing_taxonomy_list.csv', header=True, inferSchema=True)
+    bill_df = ((b_df.filter(b_df.billing_code.isNotNull() & (b_df.billing_code != ""))
+                .drop('_c4','_c5','_c6')
+                .withColumn("billing_code", lpad(b_df["billing_code"], 5, "0")))
+            )
+    bill_join = bill_df.select('billing_code','taxonomy_list')
+  
+    bill_df.printSchema()
+
+    return pr_df,pd_df,net_df,bill_join,bill_df
+         
