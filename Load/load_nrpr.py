@@ -24,12 +24,9 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
         password=password,
         port= port)
     cursor = connection.cursor()
-
-    cursor.execute("DROP TABLE IF EXISTS pr_table;")
-    cursor.execute("DROP TABLE IF EXISTS nr_table;")
-    cursor.execute("DROP TABLE IF EXISTS bill_table;")
    
     pr_table = """
+    DROP TABLE IF EXISTS pr_table;
     CREATE TABLE pr_table(
         provider_group_id INT,
         npi BIGINT,
@@ -45,7 +42,8 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
         lon DOUBLE PRECISION,
         provider_full_name VARCHAR,
         prv_taxonomy TEXT[],
-        prv_specialty TEXT[]
+        prv_specialty TEXT[],
+        geom GEOGRAPHY GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography)STORED
     );
     """
 
@@ -53,6 +51,7 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
     connection.commit()
 
     nr_table= """
+    DROP TABLE IF EXISTS nr_table;
     CREATE TABLE nr_table(
         billing_code VARCHAR(5),
         billing_code_type VARCHAR,
@@ -63,18 +62,22 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
         negotiated_rate DOUBLE PRECISION,    
         negotiated_type VARCHAR,
         service_code INTEGER[],
-        taxonomy_list VARCHAR
+        taxonomy_list TEXT[]
     );
     """
     cursor.execute(nr_table)
     connection.commit()
 
-    bill_table= """
-    CREATE TABLE bill_table(
+    cursor.execute("CREATE SCHEMA IF NOT EXISTS taxonomy;")
+    connection.commit()
+
+    bill_table = """
+    DROP TABLE IF EXISTS taxonomy.billing_taxonomy;
+    CREATE TABLE IF NOT EXISTS taxonomy.billing_taxonomy (
         billing_code VARCHAR(5),
         billing_code_type VARCHAR(10),
         billing_description VARCHAR,
-        taxonomy_list VARCHAR
+        taxonomy_list TEXT[]
     );
     """
     cursor.execute(bill_table)
@@ -82,13 +85,10 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
 
     network_data = spark.read.parquet(rate_path)
     provider_data = spark.read.parquet(provider_path)
-    
-    provider_data.show(5)   
-    network_data.show(5)
 
     provider_data.write.jdbc(url=jdbc_url,table="pr_table",mode="append", properties=jdbc_properties)
     network_data.write.jdbc(url=jdbc_url,table="nr_table",mode="append", properties=jdbc_properties)
-    bill_df.write.jdbc(url=jdbc_url,table="bill_table",mode="append", properties=jdbc_properties)
+    bill_df.write.jdbc(url=jdbc_url,table="taxonomy.billing_taxonomy",mode="append", properties=jdbc_properties)
 
     logger.info("Successfully load to postgresql")
     cursor.close()
