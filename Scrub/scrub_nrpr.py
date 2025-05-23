@@ -1,4 +1,4 @@
-from pyspark.sql.functions import expr,concat,hash,when,col,array,concat_ws,lpad
+from pyspark.sql.functions import expr,concat,hash,when,col,array,concat_ws,lpad,regexp_replace
 from pyspark.sql.types import ShortType,LongType,ArrayType,IntegerType,DoubleType
 
 def scrub_import(nrpr_file,prov,etl,logger):
@@ -9,28 +9,18 @@ def scrub_import(nrpr_file,prov,etl,logger):
     nrpr_path = spark.read.json(nrpr_file)
     pro_path = spark.read.parquet(prov)
 
-    nrpr_flat = nrpr_path.selectExpr("explode(in_network) as net").select("net.*")
-    rate_file = (nrpr_flat.selectExpr("*", "explode(negotiated_rates) as rates")
-        .selectExpr("*", "explode(rates.provider_groups) as id")
-        .selectExpr("*", "explode(id.npi) as npi")
-        .selectExpr("*", "explode(rates.negotiated_prices) as prices")
-        .selectExpr(
-            "billing_code",
-            "billing_code_type",
-            "negotiation_arrangement",
-            "npi",
-            "id.tin.type as tin_type",
-            "id.tin.value as tin",
-            "prices.billing_class as billing_class",
-            "prices.billing_code_modifier as billing_code_modifier",
-            "prices.negotiated_rate as negotiated_rate",
-            "prices.negotiated_type as negotiated_type",
-            "prices.service_code as service_code"
-        ) )
+    nrpr_path.printSchema()
+  
+    rate_file = (nrpr_path.selectExpr("*", "explode(in_network) as net").drop("in_network")
+    .selectExpr("*", "explode(net.negotiated_rates) as rates","net.billing_code",
+            "net.billing_code_type","net.negotiation_arrangement").drop("net", "negotiated_rates")
+    .selectExpr("*", "explode(rates.provider_groups) as id").drop("provider_groups")
+    .selectExpr("*", "explode(id.npi) as npi","id.tin.type as tin_type", "id.tin.value as tin").drop("id")   
+    .selectExpr("*", "explode(rates.negotiated_prices) as prices").drop("rates")
+    .select("*", "prices.*").drop("prices"))
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-    rate_id = (rate_file.withColumn('tin', expr("REPLACE(tin, '-', '')"))
-        .withColumn('provider_group_id',concat("npi","tin"))
-        .withColumn('provider_group_id',hash('provider_group_id')))
+    rate_id = (rate_file.withColumn('tin', regexp_replace(col('tin'), '-', ''))
+        .withColumn('provider_group_id',hash(concat("npi","tin"))))
     
     rate_id.select('provider_group_id').distinct().count()
     rate_id.select('npi','tin').distinct().count()
@@ -69,7 +59,18 @@ def scrub_import(nrpr_file,prov,etl,logger):
             )
 
     #Network Table
-    in_net = rate_id.drop("npi","tin_type","tin") 
+    in_net = rate_id.select(
+        "billing_code",
+        "billing_code_type",
+        "negotiation_arrangement",
+        "provider_group_id",
+        "billing_class",
+        "billing_code_modifier",
+        "negotiated_rate",
+        "negotiated_type",
+        "service_code"
+        )
+
     net_df = (in_net.filter(in_net.billing_code.isNotNull() & (in_net.billing_code != ""))
                 .withColumn("service_code",col("service_code").cast(ArrayType(IntegerType())))
 )
@@ -79,6 +80,7 @@ def scrub_import(nrpr_file,prov,etl,logger):
     bill_df = ((b_df.filter(b_df.billing_code.isNotNull() & (b_df.billing_code != ""))
                 .drop('_c4','_c5','_c6')
                 .withColumn("billing_code", lpad(b_df["billing_code"], 5, "0")))
+                .withColumn("taxonomy_list",array(regexp_replace(col("taxonomy_list"), r"^\{|\}$", "")))
             )
     bill_join = bill_df.select('billing_code','taxonomy_list')
   
