@@ -1,6 +1,6 @@
+from pyspark.sql.functions import size,array_intersect,col
 
-
-def process(pr_df,pd_df,net_df,bill_join,etl,logger):
+def process(pr_df,pd_df,net_df,bill_join,logger):
 
     nr_table = net_df.join(bill_join,on ="billing_code",how= "inner")
     pr_table = pr_df.join(pd_df,on =["npi","tin"],how= "inner")
@@ -11,7 +11,8 @@ def process(pr_df,pd_df,net_df,bill_join,etl,logger):
 
     nrpr = nr_table.join(pr_table,on="provider_group_id",how="inner")
 
-
+    specialized_filter = nrpr.filter(size(array_intersect(col("prv_taxonomy"), col("taxonomy_list"))) > 0)
+    specialized_filter.show(5)
 
     rate_path = "output_files/nr"
     provider_path = "output_files/pr"
