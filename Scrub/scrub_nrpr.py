@@ -10,14 +10,15 @@ def scrub_import(nrpr_file,prov,etl,logger):
     pro_path = spark.read.parquet(prov)
 
     nrpr_path.printSchema()
-  
-    rate_file = (nrpr_path.selectExpr("*", "explode(in_network) as net").drop("in_network")
-    .selectExpr("*", "explode(net.negotiated_rates) as rates","net.billing_code",
-            "net.billing_code_type","net.negotiation_arrangement").drop("net", "negotiated_rates")
-    .selectExpr("*", "explode(rates.provider_groups) as id").drop("provider_groups")
-    .selectExpr("*", "explode(id.npi) as npi","id.tin.type as tin_type", "id.tin.value as tin").drop("id")   
-    .selectExpr("*", "explode(rates.negotiated_prices) as prices").drop("rates")
-    .select("*", "prices.*").drop("prices"))
+
+    rate_file = (nrpr_file.selectExpr("*", "explode(in_network) as net").drop("in_network")
+        .select("*","net.*").drop("net")
+        .selectExpr("*", "explode(negotiated_rates) as rates").drop("negotiated_rates")
+        .selectExpr("*", "explode(rates.provider_groups) as id").drop("provider_groups")
+        .selectExpr("*", "explode(id.npi) as npi","id.tin.type as tin_type", "id.tin.value as tin").drop("id")   
+        .selectExpr("*", "explode(rates.negotiated_prices) as prices").drop("rates")
+        .select("*", "prices.*").drop("prices")
+    )
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     rate_id = (rate_file.withColumn('tin', regexp_replace(col('tin'), '-', ''))
         .withColumn('provider_group_id',hash(concat("npi","tin"))))
