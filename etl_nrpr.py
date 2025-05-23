@@ -27,6 +27,6 @@ class ETL:
             self.spark = SparkSession.builder.appName("etl").config("spark.driver.memory", self.driver_memory).getOrCreate()
 
             pr_df,pd_df,net_df,bill_join,bill_df=scrub_nrpr.scrub_import(nrpr_file,args.prov,self,logger)
-            rate_path,provider_path = process.process(pr_df,pd_df,net_df,bill_join,self,logger)
+            rate_path,provider_path = process.process(pr_df,pd_df,net_df,bill_join,logger)
             load_nrpr.load_import(rate_path,provider_path,bill_df,self,logger)
             
