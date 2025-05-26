@@ -11,7 +11,7 @@ def scrub_import(nrpr_file,prov,etl,logger):
 
     nrpr_path.printSchema()
 
-    rate_file = (nrpr_file.selectExpr("*", "explode(in_network) as net").drop("in_network")
+    rate_file = (nrpr_path.selectExpr("*", "explode(in_network) as net").drop("in_network")
         .select("*","net.*").drop("net")
         .selectExpr("*", "explode(negotiated_rates) as rates").drop("negotiated_rates")
         .selectExpr("*", "explode(rates.provider_groups) as id").drop("provider_groups")
