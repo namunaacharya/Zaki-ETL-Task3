@@ -61,8 +61,7 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
         billing_code_modifier TEXT[],
         negotiated_rate DOUBLE PRECISION,    
         negotiated_type VARCHAR,
-        service_code INTEGER[],
-        taxonomy_list TEXT[]
+        service_code INTEGER[]
     );
     """
     cursor.execute(nr_table)
@@ -72,8 +71,8 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
     connection.commit()
 
     bill_table = """
-    DROP TABLE IF EXISTS taxonomy.billing_taxonomy;
-    CREATE TABLE IF NOT EXISTS taxonomy.billing_taxonomy (
+    DROP TABLE IF EXISTS taxonomy.bill_table;
+    CREATE TABLE IF NOT EXISTS taxonomy.bill_table(
         billing_code VARCHAR(5),
         billing_code_type VARCHAR(10),
         billing_description VARCHAR,
@@ -88,7 +87,7 @@ def load_import(rate_path,provider_path,bill_df,etl,logger):
 
     provider_data.write.jdbc(url=jdbc_url,table="pr_table",mode="append", properties=jdbc_properties)
     network_data.write.jdbc(url=jdbc_url,table="nr_table",mode="append", properties=jdbc_properties)
-    bill_df.write.jdbc(url=jdbc_url,table="taxonomy.billing_taxonomy",mode="append", properties=jdbc_properties)
+    bill_df.write.jdbc(url=jdbc_url,table="taxonomy.bill_table",mode="append", properties=jdbc_properties)
 
     logger.info("Successfully load to postgresql")
     cursor.close()
