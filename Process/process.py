@@ -14,6 +14,7 @@ def process(pr_df,pd_df,net_df,bill_join,logger):
     specialized_filter = nrpr.filter(size(array_intersect(col("prv_taxonomy"), col("taxonomy_list"))) > 0)
     specialized_filter.show(5)
 
+    nr_table = nr_table.drop('taxonomy_list')
     rate_path = "output_files/nr"
     provider_path = "output_files/pr"
     npi_path = "output_files/left_npi"
