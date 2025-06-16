@@ -65,7 +65,6 @@ def average_grade(student):
 # new.add_grade('Advanced', 80)
 # avg_grade = round(average_grade(new),2)
 # print(f"Average grade of {new.st_name} is {avg_grade}")
-
 # new1 = Enrollment('Namm','Data Science','2025-01-30')
 # print(Enrollment.student_count)
 
