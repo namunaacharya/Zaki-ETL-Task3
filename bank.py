@@ -130,7 +130,7 @@ class Staff(Bank):
             if break_start <= time <= break_end:
                 print(f"{self.name} is currently on break.")
             else:
-                print(f"{self.name} is is currently available.")
+                print(f"{self.name} is currently available.")
         except ValueError:
             print("Invalid time format. Use HH:MM.")
 
