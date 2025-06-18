@@ -150,12 +150,12 @@ staff.check_break('13:40')
 staff.check_break('40:13')
 
 data = {}
-data[customer.id] = {'name':customer.name, 'address':customer.address, 'status' : customer.status}
+data[customer.id] = {'name':customer.name, 'address':customer.address, 'balance' : customer.balance, 'status' : customer.status}
 with open('customer_entry.json','w') as f:
     json.dump(data, f, indent=4)
 
 data = {}
-data[staff.id] = {'name':staff.name, 'address':staff.address, 'status' : staff.status}
+data[staff.id] = {'name':staff.name, 'address':staff.address, 'balance' : staff.balance, 'status' : staff.status}
 with open('staff_entry.json','w') as f:
     json.dump(data, f, indent=4)
 
