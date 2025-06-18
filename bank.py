@@ -37,6 +37,9 @@ class Bank(ABC):
 
     def validate_balance(func):
         def wrapper(self, amount, *args):
+            if amount < 0:
+                print("Amount can't be negative.")
+                return False
             if self.balance < amount:
                 print("Sorry, this transaction cannot be held.")
                 print(f"Insufficient balance : Rs.{self.balance}.")
@@ -67,11 +70,11 @@ class Customer(Bank):
 
     @Bank.check_datatype(int)
     @Bank.validate_balance
-    def transaction(self,amount,receiver_name):  
-        print(f"Dear {self.name}, Rs.{amount} has been transfered to {receiver_name}'s account. {Bank.bank_name} ")
+    def transaction(self,amount,receiver):  
+        print(f"Dear {self.name}, Rs.{amount} has been transfered to {receiver.name}'s account. {Bank.bank_name} ")
         self.balance -= amount
         receiver.balance += amount
-        print(f"Your balance : {customer.balance}")
+        print(f"Your balance : {self.balance}")
         print(f"{receiver.name}'s balance : {receiver.balance}")
 
     @property
@@ -109,9 +112,11 @@ class Staff(Bank):
     @Bank.check_datatype(int)
     @Bank.validate_balance
     def transaction(self,amount,receiver):  
-        print(f"Dear {self.name}, Rs.{amount} has been transferred to {self.receiver}'s account. {Bank.bank_name} ")
+        print(f"Dear {self.name}, Rs.{amount} has been transferred to {receiver.name}'s account. {Bank.bank_name} ")
         self.balance -= amount
         receiver.balance += amount
+        print(f"Your balance : {self.balance}")
+        print(f"{receiver.name}'s balance : {receiver.balance}")
 
     @property
     def get_pin(self):
@@ -133,31 +138,6 @@ class Staff(Bank):
                 print(f"{self.name} is currently available.")
         except ValueError:
             print("Invalid time format. Use HH:MM.")
-
-
-receiver = Customer('Prabina','Ktm')
-customer = Customer('Namuna','Butwal')
-staff = Staff('Yami','Kalanki','Cash')
-
-customer.change_pin = 2345
-print("New PIN:", customer.get_pin)
-
-customer.deposit(1000)
-customer.transaction(200,receiver.name)
-
-staff.withdrawal(200)
-staff.check_break('13:40')
-staff.check_break('40:13')
-
-data = {}
-data[customer.id] = {'name':customer.name, 'address':customer.address, 'balance' : customer.balance, 'status' : customer.status}
-with open('customer_entry.json','w') as f:
-    json.dump(data, f, indent=4)
-
-data = {}
-data[staff.id] = {'name':staff.name, 'address':staff.address, 'balance' : staff.balance, 'status' : staff.status}
-with open('staff_entry.json','w') as f:
-    json.dump(data, f, indent=4)
 
 
 
