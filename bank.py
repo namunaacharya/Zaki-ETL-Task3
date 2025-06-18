@@ -114,10 +114,10 @@ class Staff(Bank):
         receiver.balance += amount
 
     @property
-    def change_pin(self):
+    def get_pin(self):
         return(self.__pin)
     
-    @change_pin.setter
+    @get_pin.setter
     def change_pin(self,new_pin):
         self.__pin = new_pin
         print(f"Your pin is updated.")
@@ -140,6 +140,8 @@ customer = Customer('Namuna','Butwal')
 staff = Staff('Yami','Kalanki','Cash')
 
 customer.change_pin = 2345
+print("New PIN:", customer.get_pin)
+
 customer.deposit(1000)
 customer.transaction(200,receiver.name)
 
