@@ -34,10 +34,8 @@ def main():
 
     entry.deposit(2200)
     entry.withdrawal(300)
-    receiver = Customer('Namm','Lalitpur')
+    receiver = Customer('Yami','KTM')
     entry.transaction(200,receiver)
-
-    print(entry.name)
 
     data = {
         entry.id: {
