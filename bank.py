@@ -1,6 +1,5 @@
 from abc import abstractmethod, ABC
 from datetime import datetime
-import json
 
 class Bank(ABC):
     bank_name = 'Nabil Bank'
