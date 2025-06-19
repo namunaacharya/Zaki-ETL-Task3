@@ -8,8 +8,10 @@ class BankFactory():
     def create_bank_entry(detail,name,address,**kwargs):
         if detail.lower() == 'staff':
             return Staff(name,address,**kwargs)
-        if detail.lower() == 'customer':
+        elif detail.lower() == 'customer':
             return Customer(name,address,**kwargs)
+        else:
+            print("Invalid detail! Please choose either 'staff' or 'customer'.")
 
 def main():
     detail = sys.argv[1]
@@ -35,6 +37,8 @@ def main():
     receiver = Customer('Namm','Lalitpur')
     entry.transaction(200,receiver)
 
+    print(entry.name)
+
     data = {
         entry.id: {
             'name': entry.name,
@@ -44,7 +48,7 @@ def main():
         }
     }
 
-    with open(f'{detail.lower()}_data.json', 'w') as f:
+    with open(f'{detail.lower()}_entry.json', 'w') as f:
         json.dump(data, f, indent=4)
 
 if __name__ == '__main__':
